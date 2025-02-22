@@ -7,17 +7,41 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h2>HR Management System</h2>
-        <input type="text" id="empID" placeholder="Enter Employee ID">
+
+    <div id="loginPage">
+        <h2>Login</h2>
+        <input type="text" id="userID" placeholder="Enter User ID">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div id="dashboard" style="display: none;">
+        <h2>HR Management Dashboard</h2>
+
+        <div id="adminPanel" style="display: none;">
+            <h3>Add Employee</h3>
+            <input type="text" id="empName" placeholder="Employee Name">
+            <input type="text" id="empID" placeholder="Employee ID">
+            <input type="text" id="empLocation" placeholder="Job Location">
+            <input type="text" id="empRole" placeholder="Job Role">
+            <input type="text" id="empSubcontractor" placeholder="Subcontractor Name">
+            <button onclick="addEmployee()">Add Employee</button>
+        </div>
+
+        <h3>Mark Attendance</h3>
+        <input type="text" id="attendanceEmpID" placeholder="Enter Employee ID">
+        <input type="number" id="workingHours" placeholder="Enter Working Hours">
         <button onclick="markAttendance()">Mark Attendance</button>
+
         <h3>Attendance Records</h3>
         <table id="attendanceTable">
             <tr>
                 <th>Date</th>
                 <th>Employee ID</th>
+                <th>Working Hours</th>
             </tr>
         </table>
+
+        <h3>Reports</h3>
         <button onclick="generateReport()">Download Report</button>
     </div>
 
