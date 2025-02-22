@@ -5,6 +5,8 @@ const users = {
     "E101": { role: "user", empID: "E101" }
 };
 
+const employees = [];
+
 function login() {
     var empID = document.getElementById("empID").value;
     if (users[empID]) {
@@ -22,13 +24,21 @@ function login() {
 function addEmployee() {
     var empName = document.getElementById("empName").value;
     var jobRole = document.getElementById("jobRole").value;
-    var empID = "E" + (Object.keys(users).length + 100);
-    users[empID] = { role: "user", empID: empID, name: empName, jobRole: jobRole };
+    var jobLocation = document.getElementById("jobLocation").value;
+    var subcontractor = document.getElementById("subcontractor").value;
+    var empID = "E" + (employees.length + 101);
+    
+    employees.push({ empID, empName, jobRole, jobLocation, subcontractor });
     alert("Employee Added! ID: " + empID);
+    updateLocationGraph();
 }
 
 function markAttendance() {
     var empID = document.getElementById("attendanceEmpID").value;
+    if (!employees.find(emp => emp.empID === empID)) {
+        alert("Employee not found! Please add employee first.");
+        return;
+    }
     var hours = parseInt(document.getElementById("workingHours").value);
     var date = new Date().toLocaleDateString();
 
@@ -53,39 +63,18 @@ function loadAttendance() {
     });
 }
 
-function generateMandaysReport() {
-    var attendanceData = JSON.parse(localStorage.getItem("attendance")) || [];
-    var csvContent = "Date,Employee ID,Mandays\n" +
-        attendanceData.map(e => `${e.date},${e.empID},${(e.hours / 8).toFixed(2)}`).join("\n");
-
-    downloadCSV(csvContent, "mandays_report.csv");
-}
-
-function generateHeadcountReport() {
-    var attendanceData = JSON.parse(localStorage.getItem("attendance")) || [];
-    var jobCount = {};
-    attendanceData.forEach(record => {
-        jobCount[record.empID] = (jobCount[record.empID] || 0) + 1;
+function updateLocationGraph() {
+    var ctx = document.getElementById("locationChart").getContext("2d");
+    var locations = {};
+    employees.forEach(emp => {
+        locations[emp.jobLocation] = (locations[emp.jobLocation] || 0) + 1;
     });
 
-    var csvContent = "Employee ID,Job Count\n" +
-        Object.keys(jobCount).map(empID => `${empID},${jobCount[empID]}`).join("\n");
-
-    downloadCSV(csvContent, "headcount_report.csv");
-}
-
-function generateAttendanceReport() {
-    var attendanceData = JSON.parse(localStorage.getItem("attendance")) || [];
-    var csvContent = "Date,Employee ID,Working Hours\n" + 
-        attendanceData.map(e => `${e.date},${e.empID},${e.hours}`).join("\n");
-
-    downloadCSV(csvContent, "attendance_report.csv");
-}
-
-function downloadCSV(content, filename) {
-    var blob = new Blob([content], { type: "text/csv" });
-    var link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: Object.keys(locations),
+            datasets: [{ label: "Employees", data: Object.values(locations), backgroundColor: "blue" }]
+        }
+    });
 }
