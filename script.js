@@ -1,42 +1,32 @@
 document.addEventListener("DOMContentLoaded", loadAttendance);
 
-// Dummy users
 const users = {
     "admin": { role: "admin" },
-    "user1": { role: "user", empID: "E101" }
+    "E101": { role: "user", empID: "E101" }
 };
 
-// Login Function
 function login() {
-    var userID = document.getElementById("userID").value;
-    if (users[userID]) {
-        localStorage.setItem("loggedInUser", JSON.stringify(users[userID]));
+    var empID = document.getElementById("empID").value;
+    if (users[empID]) {
+        localStorage.setItem("loggedInUser", JSON.stringify(users[empID]));
         document.getElementById("loginPage").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
-        if (users[userID].role === "admin") {
+        if (users[empID].role === "admin") {
             document.getElementById("adminPanel").style.display = "block";
         }
     } else {
-        alert("Invalid User ID!");
+        alert("Invalid Employee ID!");
     }
 }
 
-// Add Employee
 function addEmployee() {
-    var name = document.getElementById("empName").value;
-    var empID = document.getElementById("empID").value;
-    var location = document.getElementById("empLocation").value;
-    var role = document.getElementById("empRole").value;
-    var subcontractor = document.getElementById("empSubcontractor").value;
-
-    var employees = JSON.parse(localStorage.getItem("employees")) || [];
-    employees.push({ name, empID, location, role, subcontractor });
-    localStorage.setItem("employees", JSON.stringify(employees));
-
-    alert("Employee Added!");
+    var empName = document.getElementById("empName").value;
+    var jobRole = document.getElementById("jobRole").value;
+    var empID = "E" + (Object.keys(users).length + 100);
+    users[empID] = { role: "user", empID: empID, name: empName, jobRole: jobRole };
+    alert("Employee Added! ID: " + empID);
 }
 
-// Mark Attendance
 function markAttendance() {
     var empID = document.getElementById("attendanceEmpID").value;
     var hours = parseInt(document.getElementById("workingHours").value);
@@ -49,7 +39,6 @@ function markAttendance() {
     loadAttendance();
 }
 
-// Load Attendance Data
 function loadAttendance() {
     var table = document.getElementById("attendanceTable");
     var attendanceData = JSON.parse(localStorage.getItem("attendance")) || [];
@@ -64,14 +53,39 @@ function loadAttendance() {
     });
 }
 
-// Generate Report (Download CSV)
-function generateReport() {
+function generateMandaysReport() {
     var attendanceData = JSON.parse(localStorage.getItem("attendance")) || [];
-    var csvContent = "Date,Employee ID,Working Hours\n" + attendanceData.map(e => `${e.date},${e.empID},${e.hours}`).join("\n");
+    var csvContent = "Date,Employee ID,Mandays\n" +
+        attendanceData.map(e => `${e.date},${e.empID},${(e.hours / 8).toFixed(2)}`).join("\n");
 
-    var blob = new Blob([csvContent], { type: "text/csv" });
+    downloadCSV(csvContent, "mandays_report.csv");
+}
+
+function generateHeadcountReport() {
+    var attendanceData = JSON.parse(localStorage.getItem("attendance")) || [];
+    var jobCount = {};
+    attendanceData.forEach(record => {
+        jobCount[record.empID] = (jobCount[record.empID] || 0) + 1;
+    });
+
+    var csvContent = "Employee ID,Job Count\n" +
+        Object.keys(jobCount).map(empID => `${empID},${jobCount[empID]}`).join("\n");
+
+    downloadCSV(csvContent, "headcount_report.csv");
+}
+
+function generateAttendanceReport() {
+    var attendanceData = JSON.parse(localStorage.getItem("attendance")) || [];
+    var csvContent = "Date,Employee ID,Working Hours\n" + 
+        attendanceData.map(e => `${e.date},${e.empID},${e.hours}`).join("\n");
+
+    downloadCSV(csvContent, "attendance_report.csv");
+}
+
+function downloadCSV(content, filename) {
+    var blob = new Blob([content], { type: "text/csv" });
     var link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "attendance_report.csv";
+    link.download = filename;
     link.click();
 }
