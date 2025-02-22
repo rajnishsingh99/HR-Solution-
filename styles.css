@@ -5,7 +5,7 @@ body {
 }
 .container {
     margin: 100px auto;
-    width: 300px;
+    width: 400px;
     padding: 20px;
     background: white;
     box-shadow: 0px 0px 10px gray;
@@ -14,4 +14,12 @@ input, button {
     width: 90%;
     padding: 10px;
     margin: 10px 0;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid black;
+    padding: 5px;
 }
